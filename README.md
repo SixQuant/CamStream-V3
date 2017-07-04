@@ -19,4 +19,4 @@ Full opencv using without pygame. fast and light
 #### [*] flip=justaddValue to use
 
 
-![alt tag](https://raw.githubusercontent.com/avramit/CamStream/master/screenshot.png)
+![alt tag](https://raw.githubusercontent.com/avramit/CamStream-V2/master/screenshot.png)
