@@ -10,7 +10,9 @@ from datetime import datetime
 
 
 camera = cv2.VideoCapture(0)
-
+if not camera.isOpened():
+	print ('Please connect camera')
+	exit()
 
 
 class CamHandler(BaseHTTPRequestHandler):
