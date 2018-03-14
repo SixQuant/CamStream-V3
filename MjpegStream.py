@@ -20,7 +20,7 @@ class CamHandler(BaseHTTPRequestHandler):
 		query_components = urlparse.parse_qs(urlparse.urlparse(self.path).query) 
 		
 		#/best to auto optimize 
-		if (urlparse.urlparse(self.path).path == '/best'):
+		if urlparse.urlparse(self.path).path == '/best':
 			self.send_response(301)
 			self.send_header('Location','/?q=20&gray=true&resize=-2')
 			self.end_headers()
@@ -53,7 +53,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				ts =  datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
 				cv2.putText(image, ts, (10, image.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
 
-				if ('resize' in query_components):
+				if 'resize' in query_components:
 					height, width = image.shape[:2]
 					resizePercent = int( float( query_components['resize'][0] ) )
 					if resizePercent > 0: 
@@ -64,7 +64,7 @@ class CamHandler(BaseHTTPRequestHandler):
 						resizePercent = abs(resizePercent)
 						image = cv2.resize(image, (width/resizePercent, height/resizePercent)) 
 					  
-				if ('q' in query_components):
+				if 'q' in query_components:
 					r, buf = cv2.imencode(".jpg",image, [cv2.IMWRITE_JPEG_QUALITY, int(query_components['q'][0])]) 
 				else:
 					r, buf = cv2.imencode(".jpg",image) 
@@ -91,19 +91,12 @@ def GetLocalIp():
 	s.close()
 	return PCip
 
-
-def main():
+if __name__ == '__main__':
 	try:
 		serverport = 80
-
 		server = ThreadedHTTPServer(('0.0.0.0', serverport), CamHandler)
 		print "Server start on http://"+GetLocalIp()+':'+str(serverport)+'/'
-		
 		server.serve_forever()
 	except KeyboardInterrupt:
 		camera.release()
 		server.socket.close()
-
-if __name__ == '__main__':
-	main()
-
