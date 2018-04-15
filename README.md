@@ -2,6 +2,8 @@
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ARVABYAUX3NPC)
 Full opencv without pygame. fast and light
 
+### I know the code is shitty and i need to rewrite all (I wrote it when i was 13 years old and just start to learn python)
+
 ###### [*] Image compression (quality, crop+-, grayscale, blueimage)
 
 ## Endpoints
