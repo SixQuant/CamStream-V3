@@ -1,4 +1,4 @@
-# CamStream-V2
+# CamStream-V3
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ARVABYAUX3NPC)
 Full opencv without pygame. fast and light
 
