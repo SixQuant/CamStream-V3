@@ -1,28 +1,41 @@
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import cv2
-from PIL import Image
-import threading
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-from SocketServer import ThreadingMixIn
-import time
 import socket
-import urlparse
+from socketserver import ThreadingMixIn
+from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 
+def get_local_ip():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("google.com",80))
+	PCip = s.getsockname()[0]
+	s.close()
+	return PCip
 
-camera = cv2.VideoCapture(0)
-if not camera.isOpened():
-	print ('Please connect camera')
-	exit()
-
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+	"""Handle requests in a separate thread."""
 
 class CamHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
-		query_components = urlparse.parse_qs(urlparse.urlparse(self.path).query) 
+		parsed_path = urlparse(self.path)
+		query_components = parse_qs(parsed_path.query) 
 		
+		image_quality = None
+		if 'q' in query_components:
+			image_quality = int(query_components['q'][0]) 
+
+		resize_percent = None
+		if 'resize' in query_components:
+			resize_percent = int(query_components['resize'][0])
+
+		make_it_blue = 'blue' in query_components
+		make_it_gray = 'gray' in query_components
+		flip_it = 'flip' in query_components
+
 		#/best to auto optimize 
-		if urlparse.urlparse(self.path).path == '/best':
+		if parsed_path.path == '/best':
 			self.send_response(301)
-			self.send_header('Location','/?q=20&gray=true&resize=-2')
+			self.send_header('Location', '/?q=20&gray=true&resize=-2')
 			self.end_headers()
 			return
 		
@@ -35,68 +48,58 @@ class CamHandler(BaseHTTPRequestHandler):
 		while True:
 			try:
 				return_value, image = camera.read()
+
 				if not return_value:
 					continue 
 
-
-				if ('blue' in query_components):
+				if make_it_blue:
 					image[:,:,1] = 0
 					image[:,:,2] = 0
 
-				if ('flip' in query_components):
-					image = cv2.flip(image,1)
+				if make_it_gray:
+					image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-				if ('gray' in query_components):
-					image = cv2.cvtColor( image, cv2.COLOR_RGB2GRAY )
+				if flip_it:
+					image = cv2.flip(image, 1)
 
 				#after set image color 
-				ts =  datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+				ts =  datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
 				cv2.putText(image, ts, (10, image.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2)
 
-				if 'resize' in query_components:
+				if resize_percent:
 					height, width = image.shape[:2]
-					resizePercent = int( float( query_components['resize'][0] ) )
-					if resizePercent > 0: 
+					if resize_percent > 0: 
 						#make image bigger
-						image = cv2.resize(image, (width*resizePercent, height*resizePercent)) 
-					elif resizePercent < 0:
+						image = cv2.resize(image, (width*resize_percent, height*resize_percent)) 
+					elif resize_percent < 0:
 						#make image smaller
-						resizePercent = abs(resizePercent)
-						image = cv2.resize(image, (width/resizePercent, height/resizePercent)) 
+						resize_percent = abs(resize_percent)
+						image = cv2.resize(image, (width/resize_percent, height/resize_percent)) 
 					  
-				if 'q' in query_components:
-					r, buf = cv2.imencode(".jpg",image, [cv2.IMWRITE_JPEG_QUALITY, int(query_components['q'][0])]) 
+				if image_quality:
+					_, buf = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, image_quality]) 
 				else:
-					r, buf = cv2.imencode(".jpg",image) 
+					_, buf = cv2.imencode('.jpg', image) 
 
-
-				self.wfile.write("--frame")
-				self.send_header('Content-type','image/jpeg')
-				self.send_header('Content-length',str(len(buf)))
+				self.wfile.write('--frame'.encode('utf-8'))
+				self.send_header('Content-type', 'image/jpeg')
+				self.send_header('Content-length', len(buf))
 				self.end_headers()
-				self.wfile.write(bytearray(buf))
+				self.wfile.write(buf)
 	
 			except KeyboardInterrupt:
-				#break
 				pass
 		return
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-	"""Handle requests in a separate thread."""
+camera = cv2.VideoCapture(0)
+if not camera.isOpened():
+	exit ('Please connect camera')
 
-def GetLocalIp():
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	s.connect(("google.com",80))
-	PCip = s.getsockname()[0]
-	s.close()
-	return PCip
-
-if __name__ == '__main__':
-	try:
-		serverport = 80
-		server = ThreadedHTTPServer(('0.0.0.0', serverport), CamHandler)
-		print "Server start on http://"+GetLocalIp()+':'+str(serverport)+'/'
-		server.serve_forever()
-	except KeyboardInterrupt:
-		camera.release()
-		server.socket.close()
+try:
+	server_port = 80
+	server = ThreadedHTTPServer(('0.0.0.0', server_port), CamHandler)
+	print ('Server start on http://%s:%s/' % (get_local_ip(), server_port))
+	server.serve_forever()
+except KeyboardInterrupt:
+	camera.release()
+	server.socket.close()
