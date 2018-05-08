@@ -72,6 +72,8 @@ class CamHandler(BaseHTTPRequestHandler):
 		self.send_header('Pragma', 'no-cache')
 		self.end_headers()
 
+		global cap
+		
 		if file:		
 			cap = cv2.VideoCapture(file)
 
