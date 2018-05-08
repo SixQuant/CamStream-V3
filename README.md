@@ -39,4 +39,4 @@ http://127.0.0.1:5000/
 **效果**：
 
 
-![screenshot](https://raw.githubusercontent.com/sixquant/CamStream-V2/master/screenshot.png)
+![screenshot](https://github.com/SixQuant/CamStream-V3/blob/master/screenshot.png?raw=true)
