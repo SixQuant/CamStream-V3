@@ -1,24 +1,42 @@
-# CamStream-V3
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ARVABYAUX3NPC)
-Full opencv without pygame. fast and light
+# Motion JPEG Streaming
 
-### I know the code is shitty and i need to rewrite all (I wrote it when i was 13 years old and just start to learn python)
+> Fork from [CamStream-V3](https://github.com/avramit/CamStream-V3)
 
-###### [*] Image compression (quality, crop+-, grayscale, blueimage)
+用来通过HTTP直接在浏览器中播放摄像头（或视频文件）。
 
-## Endpoints
-###### [*] / -> Default settings without any change 
-###### [*] /best -> redirect to best settings
+> 其实就是用OpenCV获取摄像头或视频文件的每一帧画面，如果需要的话对画面进行加工，比如添加水印等，然后发送这一帧画面给浏览器，不断的重复这个过程。
+
+对原代码的改进：增加了播放视频文件的支持，包括帧速的控制
+
+**安装**：
+
+```Bash
+$ brew install opencv
+```
+
+**运行**：
+
+摄像头
+
+```Bash
+$ python3 main.py
+```
+
+> Ctrl + C 结束
+
+文件
+
+```Bash
+$ python3 main.py -f=movie.mp4
+```
+
+浏览器访问：
+
+```
+http://127.0.0.1:5000/
+```
+
+**效果**：
 
 
-
-## Url query
-###### [*] example url: http://localhost:8080/?q=50&gray=true&crop=-2 
-###### [*] q=(int)
-###### [*] gray=justaddValue to use
-###### [*] blue=justaddValue to use
-#### [*] resize=(int) -> image size / crop 0 - Use +2 or -2
-#### [*] flip=justaddValue to use
-
-
-![alt tag](https://raw.githubusercontent.com/avramit/CamStream-V2/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/sixquant/CamStream-V2/master/screenshot.png)
